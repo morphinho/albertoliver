@@ -176,12 +176,20 @@
     // Touch / drag
     let startX = 0, startTx = 0, dragging = false;
 
+    function getCurrentTx() {
+      const m = getComputedStyle(carousel).transform;
+      if (m === 'none') return 0;
+      const vals = m.match(/matrix\((.+)\)/);
+      return vals ? parseFloat(vals[1].split(',')[4]) : 0;
+    }
+
     carousel.addEventListener('pointerdown', e => {
       dragging = true;
       startX = e.clientX;
-      const t = getComputedStyle(carousel).transform;
-      startTx = t === 'none' ? 0 : parseFloat(t.split(',')[4]);
+      // Freeze current animated position
+      startTx = getCurrentTx();
       carousel.classList.add('dragging');
+      carousel.style.transform = `translateX(${startTx}px)`;
       carousel.setPointerCapture(e.pointerId);
     });
 
@@ -196,7 +204,7 @@
       dragging = false;
       carousel.classList.remove('dragging');
       // Find which slide center is closest to viewport center
-      const currentTx = parseFloat(getComputedStyle(carousel).transform.split(',')[4]) || 0;
+      const currentTx = getCurrentTx();
       const viewCenter = window.innerWidth / 2;
       let closest = 0, minDist = Infinity;
       for (let i = 0; i < total; i++) {
