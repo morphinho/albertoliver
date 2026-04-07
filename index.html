@@ -40,8 +40,8 @@
     }
 
     .slide img {
-      max-height: 95vh;
-      max-width: 90vw;
+      height: 95vh;
+      aspect-ratio: 1080 / 1350;
       object-fit: contain;
       border-radius: 2px;
       pointer-events: none;
@@ -229,9 +229,8 @@
       snapToNearest(true);
     });
 
-    // Init - instant, no animation
+    // Init - instant, no animation (aspect-ratio on imgs guarantees correct size before load)
     snapTo(0, false);
-    window.addEventListener('load', () => snapTo(0, false));
     window.addEventListener('resize', () => snapTo(idx, false));
   </script>
 </body>
