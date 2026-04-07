@@ -200,8 +200,9 @@
       else goTo(idx);
     });
 
-    // Init
+    // Init - wait for images to load so dimensions are correct
     window.addEventListener('resize', () => goTo(idx));
+    window.addEventListener('load', () => goTo(0));
     goTo(0);
   </script>
 </body>
