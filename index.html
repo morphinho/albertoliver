@@ -20,7 +20,7 @@
       display: flex;
       align-items: center;
       height: 100vh;
-      gap: 6px;
+      gap: 2px;
       transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
       will-change: transform;
     }
@@ -35,7 +35,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px;
+      padding: 0 1px;
     }
 
     .slide img {
@@ -195,12 +195,17 @@
       if (!dragging) return;
       dragging = false;
       carousel.classList.remove('dragging');
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 30) {
-        go(dx < 0 ? 1 : -1);
-      } else {
-        goTo(idx);
+      // Find which slide center is closest to viewport center
+      const currentTx = parseFloat(getComputedStyle(carousel).transform.split(',')[4]) || 0;
+      const viewCenter = window.innerWidth / 2;
+      let closest = 0, minDist = Infinity;
+      for (let i = 0; i < total; i++) {
+        const slide = carousel.children[i];
+        const slideCenter = slide.offsetLeft + slide.offsetWidth / 2 + currentTx;
+        const dist = Math.abs(slideCenter - viewCenter);
+        if (dist < minDist) { minDist = dist; closest = i; }
       }
+      goTo(closest);
     });
 
     // Init - wait for images to load so dimensions are correct
