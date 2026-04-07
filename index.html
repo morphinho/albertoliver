@@ -197,10 +197,7 @@
       carousel.classList.remove('dragging');
       const dx = e.clientX - startX;
       if (Math.abs(dx) > 30) {
-        // Calculate how many slides to skip based on drag distance
-        const slideWidth = carousel.children[0].offsetWidth + 6; // width + gap
-        const skip = Math.max(1, Math.round(Math.abs(dx) / slideWidth));
-        go(dx < 0 ? skip : -skip);
+        go(dx < 0 ? 1 : -1);
       } else {
         goTo(idx);
       }
