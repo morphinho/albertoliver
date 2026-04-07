@@ -216,10 +216,20 @@
       goTo(closest);
     });
 
-    // Init - wait for images to load so dimensions are correct
-    window.addEventListener('resize', () => goTo(idx));
-    window.addEventListener('load', () => goTo(0));
+    // Init - position without animation, then enable transitions
+    carousel.style.transition = 'none';
     goTo(0);
+    window.addEventListener('load', () => {
+      carousel.style.transition = 'none';
+      goTo(0);
+      // Re-enable transition after first frame
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          carousel.style.transition = '';
+        });
+      });
+    });
+    window.addEventListener('resize', () => goTo(idx));
   </script>
 </body>
 </html>
