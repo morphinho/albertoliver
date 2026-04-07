@@ -40,9 +40,8 @@
     }
 
     .slide img {
-      max-height: 95vh;
-      max-width: 95vw;
-      aspect-ratio: 1080 / 1350;
+      width: min(95vw, calc(95vh * 1080 / 1350));
+      height: min(95vh, calc(95vw * 1350 / 1080));
       object-fit: contain;
       border-radius: 2px;
       pointer-events: none;
