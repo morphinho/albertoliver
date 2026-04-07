@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albert Oliver | Portfolio 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a1a;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      user-select: none;
+    }
+
+    .carousel {
+      display: flex;
+      align-items: center;
+      height: 100vh;
+      transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      will-change: transform;
+    }
+
+    .carousel.dragging {
+      transition: none;
+    }
+
+    .slide {
+      flex: 0 0 auto;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .slide img {
+      max-height: 95vh;
+      max-width: 90vw;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Navigation arrows */
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, opacity 0.3s;
+      opacity: 0.6;
+    }
+
+    .nav-btn:hover { background: rgba(255,255,255,0.2); opacity: 1; }
+    .nav-btn.prev { left: 20px; }
+    .nav-btn.next { right: 20px; }
+    .nav-btn:disabled { opacity: 0.15; cursor: default; }
+
+    /* Progress dots */
+    .progress {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transition: background 0.3s, transform 0.3s;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: #fff;
+      transform: scale(1.3);
+    }
+
+    /* Counter */
+    .counter {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 10;
+      font-size: 14px;
+      letter-spacing: 2px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="nav-btn prev" onclick="go(-1)">&#10094;</button>
+  <button class="nav-btn next" onclick="go(1)">&#10095;</button>
+
+  <div class="counter"><span id="current">1</span> / 19</div>
+
+  <div class="carousel" id="carousel"></div>
+
+  <div class="progress" id="progress"></div>
+
+  <script>
+    const total = 19;
+    let idx = 0;
+    const carousel = document.getElementById('carousel');
+    const progress = document.getElementById('progress');
+
+    // Build slides
+    for (let i = 1; i <= total; i++) {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      slide.innerHTML = `<img src="${i}.png" alt="Slide ${i}" draggable="false">`;
+      carousel.appendChild(slide);
+
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 1 ? ' active' : '');
+      dot.onclick = () => goTo(i - 1);
+      progress.appendChild(dot);
+    }
+
+    function goTo(i) {
+      idx = Math.max(0, Math.min(total - 1, i));
+      const slide = carousel.children[idx];
+      const offset = slide.offsetLeft - (window.innerWidth - slide.offsetWidth) / 2;
+      carousel.style.transform = `translateX(${-offset}px)`;
+      document.getElementById('current').textContent = idx + 1;
+      document.querySelectorAll('.dot').forEach((d, j) => d.classList.toggle('active', j === idx));
+      document.querySelector('.prev').disabled = idx === 0;
+      document.querySelector('.next').disabled = idx === total - 1;
+    }
+
+    function go(dir) { goTo(idx + dir); }
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') go(1);
+      if (e.key === 'ArrowLeft') go(-1);
+    });
+
+    // Mouse wheel
+    document.addEventListener('wheel', e => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        go(e.deltaX > 0 ? 1 : -1);
+      } else {
+        go(e.deltaY > 0 ? 1 : -1);
+      }
+    }, { passive: true });
+
+    // Touch / drag
+    let startX = 0, startTx = 0, dragging = false;
+
+    carousel.addEventListener('pointerdown', e => {
+      dragging = true;
+      startX = e.clientX;
+      const t = getComputedStyle(carousel).transform;
+      startTx = t === 'none' ? 0 : parseFloat(t.split(',')[4]);
+      carousel.classList.add('dragging');
+      carousel.setPointerCapture(e.pointerId);
+    });
+
+    carousel.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      carousel.style.transform = `translateX(${startTx + dx}px)`;
+    });
+
+    carousel.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      carousel.classList.remove('dragging');
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
+      else goTo(idx);
+    });
+
+    // Init
+    window.addEventListener('resize', () => goTo(idx));
+    goTo(0);
+  </script>
+</body>
+</html>
